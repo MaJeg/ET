@@ -115,7 +115,7 @@ public class UserBehaviorInterpreter extends LivingComponent {
 			}
 			_gamma=0.0;
 			_em.setX(new DenseDoubleMatrix1D(1).assign(_gamma));
-			publishData("changeRole.event", new StringData(0,_agentRole.toString(),LanguageUtils.getLanguageCodeByLocale(Locale.US)));
+			publishData("changeRole.event", new StringData(0,_agentRole.toString().toLowerCase(),LanguageUtils.getLanguageCodeByLocale(Locale.US)));
 		} else if(_gamma<_negThreshold) {
 			_gamma=0.0;
 			_em.setX(new DenseDoubleMatrix1D(1).assign(_gamma));

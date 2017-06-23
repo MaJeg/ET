@@ -14,7 +14,7 @@ public class EmoTurn extends LivingComponent {
 	private static final String SCENARIO="scenario";
 	private String _actionTendency;
 	private double _motivation;
-	private String _currentRole;
+	private AgentRole _currentRole;
 	private String _scenario;
 	private double _initTime;
 	
@@ -46,7 +46,7 @@ public class EmoTurn extends LivingComponent {
 	protected void handleData(GenericData data) {
 		if(data instanceof StringData){
 			StringData changeRole = (StringData)data;
-			_currentRole=changeRole.getData();
+			_currentRole=AgentRole.valueOf(changeRole.getData().toUpperCase());
 			System.out.println("Received change role::"+_currentRole);
 		} 
 	}
@@ -57,7 +57,7 @@ public class EmoTurn extends LivingComponent {
 	}
 	
 	private void sendChangeRole(){
-		publishData("changeRole", new StringData(0,_currentRole,LanguageUtils.IDX_NONE));
+		publishData("changeRole", new StringData(0,_currentRole.toString(),LanguageUtils.IDX_NONE));
 	}
 
 	private void updateMotivation() {
@@ -66,19 +66,19 @@ public class EmoTurn extends LivingComponent {
 		double oldMot=_motivation;
 		double currentTime=TimeUtils.getCurrentTime()/1000.0;
 		if(_actionTendency.equals("excited")){
-			if(_currentRole.equals("listener")){
-				mact=0.5;
-			} else if(_currentRole.equals("speaker")){
-				mact=-0.5;
+			if(_currentRole==AgentRole.LISTENER){
+				mact=0.4;
+			} else if(_currentRole==AgentRole.SPEAKER){
+				mact=-0.4;
 			}
 		} else if(_actionTendency.equals("inhibited")){
-			if(_currentRole.equals("listener")){
-				mact=-0.5;
-			} else if(_currentRole.equals("speaker")){
-				mact=0.5;
+			if(_currentRole==AgentRole.LISTENER){
+				mact=-0.4;
+			} else if(_currentRole==AgentRole.SPEAKER){
+				mact=0.4;
 			}
 		}
-		System.out.println(mact);
+		System.out.println("mact::"+mact);
 		mu=updateMU(currentTime);
 		_motivation=mact+mu;
 		if(oldMot!=_motivation){
@@ -89,7 +89,7 @@ public class EmoTurn extends LivingComponent {
 	
 	private double updateMU(double currentTime){
 		double mu=0.0;
-		if(_currentRole.equals("listener")){
+		if(_currentRole==AgentRole.LISTENER){
 			// We simulate the fact that, when the agent is listener,
 			// it has nothing to say at the beginning then 
 			if((currentTime-_initTime)>2.0){
@@ -101,7 +101,7 @@ public class EmoTurn extends LivingComponent {
 			// When the agent is speaker, it always has something to say
 			mu=-0.5;
 		}
-		System.out.println(mu);
+		System.out.println("mu::"+mu);
 		return mu;
 	}
 
@@ -115,16 +115,16 @@ public class EmoTurn extends LivingComponent {
 
 	private void configScenario() {
 		if(_scenario.equals("scenario1")){
-			_currentRole="listener";
+			_currentRole=AgentRole.LISTENER;
 			_actionTendency="excited";
 		} else if(_scenario.equals("scenario2")){
-			_currentRole="listener";
+			_currentRole=AgentRole.LISTENER;
 			_actionTendency="inhibited";
 		} else if(_scenario.equals("scenario3")){
-			_currentRole="speaker";
+			_currentRole=AgentRole.SPEAKER;
 			_actionTendency="excited";
 		} else if(_scenario.equals("scenario4")){
-			_currentRole="speaker";
+			_currentRole=AgentRole.SPEAKER;
 			_actionTendency="inhibited";
 		}
 		updateMotivation();
