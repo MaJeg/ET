@@ -1,0 +1,238 @@
+<!--
+  ~ Copyright (c) Ovidiu Serban, ovidiu@roboslang.org
+  ~               web:http://ovidiu.roboslang.org/
+  ~ All Rights Reserved. Use is subject to license terms.
+  ~
+  ~ This file is part of AgentSlang Project (http://agent.roboslang.org/).
+  ~
+  ~ AgentSlang is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU Lesser General Public License as published by
+  ~ the Free Software Foundation, version 3 of the License and CECILL-B.
+  ~
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+  ~ GNU Lesser General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU Lesser General Public License
+  ~ along with this program. If not, see <http://www.gnu.org/licenses/>.
+  ~
+  ~ The CECILL-B license file should be a part of this project. If not,
+  ~ it could be obtained at  <http://www.cecill.info/>.
+  ~
+  ~ The usage of this project makes mandatory the authors citation in 
+  ~ any scientific publication or technical reports. For websites or
+  ~ research projects the AgentSlang website and logo needs to be linked
+  ~ in a visible area.
+  -->
+
+<project>
+    <profile name="profile1" hostname="machine1">
+        <scheduler>
+            <port>1222</port>
+            <timeout>100</timeout>
+        </scheduler>
+
+        <services>
+            <service name="org.ib.service.cns.CNService">
+                <port>1221</port>
+                <config>cnsService.xml</config>
+            </service>
+            <service name="org.ib.service.topic.TopicService">
+                <port>1220</port>
+            </service>
+        </services>
+
+        <clients>
+            <client name="org.ib.service.cns.CNClient">
+                <host>127.0.0.1</host>
+                <port>1221</port>
+            </client>
+            <client name="org.ib.service.topic.TopicClient">
+                <host>machine1</host>
+                <port>1220</port>
+            </client>
+        </clients>
+
+		
+        <components>
+			<component name="turntaking.PitchPerceptor">
+                <port>1232</port>
+                <scheduler>machine1:1222</scheduler>
+                <publish>UserSignal.Pitch@pitch.data</publish>
+				<portPitch>4044</portPitch>
+				<minPitch>60</minPitch>
+				<maxPitch>150</maxPitch>
+				<host>127.0.0.1</host>
+            </component>
+			
+			<component name="turntaking.VolumePerceptor">
+                <port>1233</port>
+                <scheduler>machine1:1222</scheduler>
+				<publish>UserSignal.Volume@volume.data</publish>
+				<portVolume>4043</portVolume>
+				<minVolume>0.0</minVolume>
+				<maxVolume>0.005</maxVolume>
+				<host>127.0.0.1</host>
+            </component>
+			
+			<component name="turntaking.UserBehaviorInterpreter">
+                <port>1234</port>
+                <scheduler>machine1:1222</scheduler>
+				<subscribe>UserSignal.Pitch@machine1:1232</subscribe>
+				<subscribe>UserSignal.Volume@machine1:1233</subscribe>
+                <publish>StringData.UBehavior@changeRole.event</publish>
+				<publish>FloatData.UBehavior@gamma.data</publish>
+				<initRole>Listener</initRole>
+				<posThreshold>1.0</posThreshold>
+				<negThreshold>-0.3</negThreshold>
+				<defaultGamma>0.0</defaultGamma>
+            </component>
+			
+			<component name="turntaking.SignalsDecider">
+				<port>1235</port>
+				<scheduler>machine1:1222</scheduler>
+				<subscribe>StringData.EmoTurn@machine1:1236</subscribe>
+				<subscribe>FloatData.UBehavior@machine1:1234</subscribe>
+				<subscribe>FloatData.EmoTurn@machine1:1236</subscribe>
+				<MARCSocketType>tcp</MARCSocketType>
+                <MARCHostname>127.0.0.1</MARCHostname>
+                <MARCInPort>4010</MARCInPort>
+				<MARCOutPort>4011</MARCOutPort>
+				<gaze>true</gaze>
+				<brows>true</brows>
+			</component>
+			
+			<component name="turntaking.EmoTurn">
+				<port>1236</port>
+				<scheduler>machine1:1222</scheduler>
+				<subscribe>StringData.UBehavior@machine1:1234</subscribe>
+				<publish>FloatData.EmoTurn@motivation</publish>
+				<publish>StringData.EmoTurn@changeRole</publish>
+				<scenario>scenario4</scenario>
+			</component>
+			
+            <!-- <component name="org.ib.logger.LogComponent"> -->
+                <!-- <port>1232</port> -->
+                <!-- <scheduler>machine1:1222</scheduler> -->
+                <!-- <subscribe>org.agent.slang.out.cereproc.CereProcTTSComponent.debug@machine1:1238</subscribe> -->
+                <!-- <subscribe>org.agent.slang.out.bml.marc.MarcBMLTranslationComponent.debug@machine1:1234</subscribe> -->
+                <!-- <subscribe>org.agent.slang.dm.narrative.HandleCommandComponent.debug@machine1:1237</subscribe> -->
+            <!-- </component> -->
+			
+			<!-- <component name="org.agent.slang.dm.narrative.PatternMatchingComponent"> -->
+                <!-- <port>1236</port> -->
+                <!-- <scheduler>machine1:1222</scheduler> -->
+                <!-- <publish>response.narrative.text@response.data</publish> -->
+                <!-- <publish>command.narrative.text@command.data</publish> -->
+                <!-- <publish>StateChangeData@stateChange.data</publish> -->
+                <!-- <subscribe>PlayerFeedback.Event@machine1:2000</subscribe> -->
+                <!-- <subscribe>StateChangeData@machine1:2000</subscribe> -->
+				<!-- <subscribe>senna.AnnotatedData.Text@machine1:2000</subscribe> -->
+                <!-- <modelPath>../Nareca/scenario/</modelPath> -->
+                <!-- <dictionaryConfig>dictionaryExtensions.xml</dictionaryConfig> -->
+				<!-- <timerCanBeStarted>false</timerCanBeStarted> -->
+            <!-- </component> -->
+
+            <!-- <component name="org.agent.slang.dm.narrative.HandleCommandComponent"> -->
+                <!-- <port>1237</port> -->
+                <!-- <scheduler>machine1:1222</scheduler> -->
+                <!-- <publish>response.narrative.text@command.data</publish> -->
+				<!-- <publish>BmlData@bml.data</publish> -->
+				<!-- <subscribe>StateChangeData@machine1:2000</subscribe> -->
+				<!-- <subscribe>command.narrative.text@machine1:2000</subscribe> -->
+                <!-- <modelPath>../Nareca/scenario/</modelPath> -->
+                <!-- <dictionaryConfig>dictionaryExtensions.xml</dictionaryConfig> -->
+            <!-- </component> -->
+
+            <!-- <component name="org.agent.slang.dm.narrative.graph.StoryGraphComponent"> -->
+                <!-- <port>1240</port> -->
+                <!-- <scheduler>machine1:1222</scheduler> -->
+                <!-- <publish>StateChangeData@stateChange.data</publish> -->
+				<!-- <subscribe>StateChangeData@machine1:1236</subscribe> -->
+                <!-- <modelPath>../Nareca/scenario/</modelPath> -->
+            <!-- </component> -->
+
+            <!-- <component name="org.agent.slang.out.cereproc.CereProcTTSComponent"> -->
+                <!-- <port>1238</port> -->
+                <!-- <scheduler>machine1:1222</scheduler> -->
+                <!-- <publish>AudioData.Text@voice.data</publish> -->
+				<!-- <subscribe>response.narrative.text@machine1:1236</subscribe> -->
+                <!-- <subscribe>response.narrative.text@machine1:1237</subscribe> -->
+                <!-- <voice>cerevoice_heather_3.0.8_22k.voice</voice> -->
+                <!-- <licenseFile>license.lic</licenseFile> -->
+            <!-- </component> -->
+
+            <!--  <component name="org.agent.slang.out.bml.marc.MarcBMLTranslationComponent"> -->
+                <!-- <port>1234</port> -->
+                <!-- <scheduler>machine1:1222</scheduler> -->
+                <!-- <subscribe>AudioData.Text@machine1:1238</subscribe> -->
+				<!-- <subscribe>StateChangeData@machine1:2000</subscribe> -->
+				<!-- <subscribe>BmlData@machine1:2000</subscribe> -->
+                <!-- <publish>PlayerFeedback.Event@audioPlayer.data</publish> -->
+                <!-- <MARCSocketType>udp</MARCSocketType> -->
+                <!-- <MARCHostname>127.0.0.1</MARCHostname> -->
+                <!-- <MARCInPort>4010</MARCInPort> -->
+                <!-- <MARCOutPort>4011</MARCOutPort> -->
+                <!-- <audioCache>audioCache</audioCache> -->
+				<!-- <imagePath>C:\Users\jegou\Documents\AgentSlang\Nareca\scenario\slides\</imagePath> -->
+				<!-- <userAudioPath>C:\Users\jegou\Documents\AgentSlang\config\userAudio\</userAudioPath> -->
+            <!-- </component> -->
+			
+			<!-- <component name="org.agent.slang.out.bml.marc.MarcBMLQueue"> -->
+                <!-- <port>1242</port> -->
+                <!-- <scheduler>machine1:1222</scheduler> -->
+                <!-- <subscribe>marc.bml.cmd@machine1:1237</subscribe> -->
+                <!-- <MARCSocketType>udp</MARCSocketType> -->
+                <!-- <MARCHostname>127.0.0.1</MARCHostname> -->
+                <!-- <MARCInPort>4010</MARCInPort> -->
+                <!-- <MARCOutPort>4011</MARCOutPort> -->
+            <!-- </component> -->
+			
+			<!-- <component name="org.agent.slang.dm.narrative.graph.OutOfContextComponent"> -->
+                <!-- <port>1241</port> -->
+                <!-- <scheduler>machine1:1222</scheduler> -->
+                <!-- <publish>StateChangeData@stateChange.data</publish> -->
+                <!-- <modelPath>../Nareca/scenario/</modelPath> -->
+            <!-- </component> -->
+			
+			<!-- <component name="org.agent.slang.inout.TextComponent"> -->
+                <!-- <port>1233</port> -->
+                <!-- <scheduler>machine1:1222</scheduler> -->
+                <!-- <publish>StringData.Text@text.data</publish> -->
+                <!-- <subscribe>response.narrative.text@machine1:1236</subscribe> -->
+                <!-- <subscribe>response.narrative.text@machine1:1237</subscribe> -->
+            <!-- </component> -->
+			
+			<!-- <component name="org.agent.slang.annotation.SennaComponent"> -->
+                <!-- <port>1235</port> -->
+                <!-- <scheduler>machine1:1222</scheduler> -->
+                <!-- <publish>senna.AnnotatedData.Text@senna.data</publish> -->
+                <!-- <subscribe>StringData.Text@machine1:2000</subscribe> -->
+                <!-- <sennaPath>../bin/senna</sennaPath> -->
+                <!-- <sennaParams>-pos</sennaParams> -->
+            <!-- </component> -->
+			
+			<!-- <component name="org.agent.slang.decision.DecisionMakerComponent"> -->
+                <!-- <port>2000</port> -->
+                <!-- <scheduler>machine1:1222</scheduler> -->
+                <!-- <subscribe>StringData.Text@machine1:1233</subscribe>	 -->
+				<!-- <subscribe>senna.AnnotatedData.Text@machine1:1235</subscribe> -->
+				<!-- <subscribe>StateChangeData@machine1:1240</subscribe> -->
+				<!-- <subscribe>StateChangeData@machine1:1241</subscribe> -->
+				<!-- <subscribe>PlayerFeedback.Event@machine1:1234</subscribe> -->
+				<!-- <subscribe>StateChangeData@machine1:1236</subscribe> -->
+				<!-- <subscribe>command.narrative.text@machine1:1236</subscribe> -->
+				<!-- <subscribe>BmlData@machine1:1237</subscribe> -->
+				<!-- <publish>StringData.Text@text.data</publish> -->
+				<!-- <publish>senna.AnnotatedData.Text@senna.data</publish> -->
+				<!-- <publish>StateChangeData@stateChange.data</publish> -->
+				<!-- <publish>PlayerFeedback.Event@audioPlayer.data</publish> -->
+				<!-- <publish>command.narrative.text@command.data</publish> -->
+				<!-- <publish>BmlData@bml.data</publish> -->
+				<!-- <modelPath>../Nareca/model/DecisionMakingModel.actr</modelPath>				 -->
+            <!-- </component> -->
+			
+        </components>
+    </profile>
+</project>

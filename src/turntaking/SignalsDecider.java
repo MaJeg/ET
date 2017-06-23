@@ -224,6 +224,7 @@ public class SignalsDecider extends LivingComponent implements DataListener {
 //			System.out.println("Gamma act::"+_gamma);
 //			System.out.println("Current Role::"+_currentRole);
 //			System.out.println("Motivation::"+_mot);
+
 		}
 		return true;
 	}
@@ -263,11 +264,10 @@ public class SignalsDecider extends LivingComponent implements DataListener {
 			String currentRole=((StringData) datum).getData();
 			if(currentRole.toLowerCase().equals("speaker")){
 				_currentRole=AgentRole.SPEAKER;
-				_mot=-1.0;
-//				System.out.println("Changement motivation::"+_mot);
 			} else{
 				_currentRole=AgentRole.LISTENER;
 			}
+			System.out.println("Received changeRole::"+currentRole);
 			
 		} else if(datum instanceof FloatData){
 			FloatData floatDat=(FloatData)datum;
@@ -275,6 +275,9 @@ public class SignalsDecider extends LivingComponent implements DataListener {
 				_gamma=floatDat.getValue();
 				_receivedGamma=true;
 //				System.out.println("Received Gamma::"+_gamma);
+			} else if(floatDat.getName().equals("motivation")){
+				_mot=floatDat.getValue();
+				System.out.println("Received motivation::"+_mot);
 			}
 		}
 	}

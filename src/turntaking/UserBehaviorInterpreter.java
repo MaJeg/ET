@@ -69,10 +69,6 @@ public class UserBehaviorInterpreter extends LivingComponent {
 
 	@Override
 	public boolean act() {
-		//System.out.println(_posThreshold);
-		//System.out.println(_negThreshold);
-		//System.out.println("Pitch::"+_pitch);
-		//System.out.println("Volume::"+_volume);
 		double accVolume= 0.0;
 		double accPitch= 0.0;
 		
@@ -108,7 +104,7 @@ public class UserBehaviorInterpreter extends LivingComponent {
 		}
 		_gamma=res;
 		
-		//System.out.println("gamma::"+_gamma);
+//		System.out.println("gamma::"+_gamma);
 		//System.out.println(_agentRole);
 		
 		if(_gamma>_posThreshold){
@@ -124,7 +120,7 @@ public class UserBehaviorInterpreter extends LivingComponent {
 			_gamma=0.0;
 			_em.setX(new DenseDoubleMatrix1D(1).assign(_gamma));
 		}
-//		SYSTEM.OUT.PRINTLN("GAMMA AFTER::"+_GAMMA);
+		System.out.println("GAMMA AFTER::"+_gamma);
 		publishData("gamma.data",new FloatData(0,_gamma,"gamma"));
 		return true;
 	}
