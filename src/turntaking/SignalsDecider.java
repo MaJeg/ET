@@ -221,7 +221,9 @@ public class SignalsDecider extends LivingComponent implements DataListener {
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-			System.out.println("gamma act::"+_gamma);
+//			System.out.println("Gamma act::"+_gamma);
+//			System.out.println("Current Role::"+_currentRole);
+//			System.out.println("Motivation::"+_mot);
 		}
 		return true;
 	}
