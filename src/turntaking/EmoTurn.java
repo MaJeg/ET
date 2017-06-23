@@ -4,30 +4,29 @@ import org.ib.component.annotations.ConfigureParams;
 import org.ib.component.base.LivingComponent;
 import org.ib.component.model.ComponentConfig;
 import org.ib.data.GenericData;
+import org.ib.data.LanguageUtils;
 import org.ib.data.StringData;
 
 @ConfigureParams(inputDataTypes={StringData.class},
-		outputChannels = {"motivation"},
-outputDataTypes = {FloatData.class})
+		outputChannels = {"motivation","changeRole"},
+outputDataTypes = {FloatData.class,StringData.class})
 public class EmoTurn extends LivingComponent {
 	private static final String SCENARIO="scenario";
 	private String _actionTendency;
 	private double _motivation;
 	private String _currentRole;
 	private String _scenario;
-	private boolean _hasSomething;
 	private double _initTime;
-	private double _currentTime;
 	
 	public EmoTurn(String outboundPort, ComponentConfig config) {
 		super(outboundPort, config);
-		_hasSomething=false;
 		_initTime=TimeUtils.getCurrentTime()/1000.0;
 	}
 
 	@Override
 	public void definePublishedData() {
 		addOutboundTypeChecker("motivation", FloatData.class);
+		addOutboundTypeChecker("changeRole",StringData.class);
 	}
 
 	@Override
@@ -39,21 +38,26 @@ public class EmoTurn extends LivingComponent {
 	public boolean act() {
 		updateMotivation();
 		System.out.println("Motivation::"+_motivation);
+		System.out.println("Current role::"+_currentRole);
 		return true;
 	}
 
 	@Override
-	protected void handleData(GenericData arg0) {
-		if(arg0 instanceof StringData){
-			StringData changeRole = (StringData)arg0;
+	protected void handleData(GenericData data) {
+		if(data instanceof StringData){
+			StringData changeRole = (StringData)data;
 			_currentRole=changeRole.getData();
-			updateMotivation();
-			sendMotivation();
-		}
+			System.out.println("Received change role::"+_currentRole);
+		} 
 	}
 
 	private void sendMotivation() {
+		System.out.println("Publish motivation::"+_motivation);
 		publishData("motivation", new FloatData(0,_motivation,"motivation"));
+	}
+	
+	private void sendChangeRole(){
+		publishData("changeRole", new StringData(0,_currentRole,LanguageUtils.IDX_NONE));
 	}
 
 	private void updateMotivation() {
@@ -78,12 +82,13 @@ public class EmoTurn extends LivingComponent {
 		_motivation=mact+mu;
 		if(oldMot!=_motivation){
 			sendMotivation();
+			sendChangeRole();
 		}
 	}
 	
 	private double updateMU(double currentTime){
 		double mu=0.0;
-		if(_currentRole.equals("Listener")){
+		if(_currentRole.equals("listener")){
 			// We simulate the fact that, when the agent is listener,
 			// it has nothing to say at the beginning then 
 			if((currentTime-_initTime)>2.0){
@@ -110,19 +115,15 @@ public class EmoTurn extends LivingComponent {
 		if(_scenario.equals("scenario1")){
 			_currentRole="listener";
 			_actionTendency="excited";
-			_hasSomething=false;
 		} else if(_scenario.equals("scenario2")){
 			_currentRole="listener";
 			_actionTendency="inhibited";
-			_hasSomething=false;
 		} else if(_scenario.equals("scenario3")){
 			_currentRole="speaker";
 			_actionTendency="excited";
-			_hasSomething=true;
 		} else if(_scenario.equals("scenario4")){
 			_currentRole="speaker";
 			_actionTendency="inhibited";
-			_hasSomething=true;
 		}
 		updateMotivation();
 	}
