@@ -78,6 +78,7 @@ public class EmoTurn extends LivingComponent {
 				mact=0.5;
 			}
 		}
+		System.out.println(mact);
 		mu=updateMU(currentTime);
 		_motivation=mact+mu;
 		if(oldMot!=_motivation){
@@ -100,6 +101,7 @@ public class EmoTurn extends LivingComponent {
 			// When the agent is speaker, it always has something to say
 			mu=-0.5;
 		}
+		System.out.println(mu);
 		return mu;
 	}
 
